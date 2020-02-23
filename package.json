@@ -1,0 +1,8 @@
+{
+    "name": "websocket-chat",
+    "version": "0.0.1",
+    "description": "Seng 513 Assignment 3 - James Bews",
+    "dependencies": {
+        "express": "^4.17.1"
+    }
+}
