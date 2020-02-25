@@ -14,20 +14,30 @@
         </style>
         <script src="/socket.io/socket.io.js"></script>   
         <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
         <script>
             $(function() {
                 var socket = io();
                 $('form').submit(function(e) {
                     e.preventDefault();
-                    socket.emit('chat message', $('#m').val());
+                    socket.emit('chat message', {id: $.cookie('chat-user'), message: $('#m').val()});
                     $('#m').val('');
                     return false;
                 });
                 socket.on('chat message', function(msg){
-                    $('#messages').append($('<li>').text(msg));
+                    $('#messages').append($('<li>').text(msg.timestamp + ' ' + msg.author + ' ' + msg.message));
                 });
-                socket.on('new user', function(user) {
-                    $('#users').append($('<li>').text(user));
+
+                socket.on('users', function(users) {
+                    var me = $.cookie('chat-user');
+                    $('#users').empty();
+                    for(var i = 0; i < users.length; i++){
+                        var name = users[i].nickName;
+                        if (users[i].id === me) {
+                            name = name + ' (You)';
+                        }
+                        $('#users').append($('<li>').text(name));
+                    }
                 });
             });
             
