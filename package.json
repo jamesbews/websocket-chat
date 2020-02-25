@@ -2,8 +2,17 @@
     "name": "websocket-chat",
     "version": "0.0.1",
     "description": "Seng 513 Assignment 3 - James Bews",
+    "scripts": {
+        "build": "tsc",
+        "dev": "ts-node-dev --respawn --transpileOnly ./websocket-chat/index.ts"
+    },
     "dependencies": {
+        "@types/express": "^4.17.2",
+        "@types/socket.io": "^2.1.4",
         "express": "^4.17.1",
-        "socket.io": "^2.3.0"
+        "path": "^0.12.7",
+        "socket.io": "^2.3.0",
+        "ts-node-dev": "^1.0.0-pre.44",
+        "typescript": "^3.8.2"
     }
 }
