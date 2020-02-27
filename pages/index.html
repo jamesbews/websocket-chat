@@ -18,14 +18,29 @@
         <script>
             $(function() {
                 var socket = io();
+                var me = $.cookie('chat-user');
+                if (!me) {
+                    me = $.cookie('nick-name');
+                    $.cookie('chat-user', me);
+                }
+                $.removeCookie('nick-name', {path: '/'});
+                socket.emit('cookie', me);
+
                 $('form').submit(function(e) {
                     e.preventDefault();
-                    socket.emit('chat message', {id: $.cookie('chat-user'), message: $('#m').val()});
+                    // TODO if / nikcname
+                    // TODO if / color
+                    socket.emit('chat message', {author: $.cookie('chat-user'), message: $('#m').val()});
                     $('#m').val('');
                     return false;
                 });
                 socket.on('chat message', function(msg){
-                    $('#messages').append($('<li>').text(msg.timestamp + ' ' + msg.author + ' ' + msg.message));
+                    var me = $.cookie('chat-user').toString();
+                    if (msg.author === me) {
+                        $('#messages').append('<li>' + msg.timestamp + ' <strong style="color:' + msg.messageColor + ';">' + msg.author + '</strong>: ' + msg.message + '</li>').css('font-weight', '700');
+                    } else {
+                        $('#messages').append('<li>' + msg.timestamp + ' <strong style="color:' + msg.messageColor + ';">' + msg.author + '</strong>: ' + msg.message + '</li>');
+                    }
                 });
 
                 socket.on('users', function(users) {
@@ -33,10 +48,21 @@
                     $('#users').empty();
                     for(var i = 0; i < users.length; i++){
                         var name = users[i].nickName;
-                        if (users[i].id === me) {
+                        if (users[i].nickName === me) {
                             name = name + ' (You)';
                         }
                         $('#users').append($('<li>').text(name));
+                    }
+                });
+                socket.on('messages', function(messages) {
+                    var me = $.cookie('chat-user').toString();
+                    $('#messages').empty()
+                    for(var i = 0; i < messages.length; i++) {
+                        if (messages[i].author === me) {
+                            $('#messages').append($('<li>').text(messages[i].timestamp + ' ' + messages[i].author + ': ' + messages[i].message).css('font-weight', '700'));
+                        } else {
+                            $('#messages').append($('<li>').text(messages[i].timestamp + ' ' + messages[i].author + ': ' + messages[i].message));
+                        }
                     }
                 });
             });
@@ -58,7 +84,7 @@
                 </div>
             </div>
             <div class="row">
-                <form action="">
+                <form>
                     <input id="m" autocomplete="off"/><button>Send</button>
                 </form>
             </div>

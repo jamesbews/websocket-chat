@@ -13,40 +13,57 @@ let io = require("socket.io")(http);
 
 const randomNameConfig: Config = {
     dictionaries: [adjectives, animals],
+    style: 'capital',
     separator: ' ',
     length: 2
 };
 
+let previousMessages: Message[] = [];
 let onlineUsers: User[] = [];
 let connections: any[] = [];
 
 
-app.get('/', (req, res) => {
+app.get('/', (req: express.Request, res: express.Response) => {
     let reqPath = path.join(__dirname, '../');
 
     const userName: string = uniqueNamesGenerator(randomNameConfig);
-    const userId = uuidv4();
-    const user = new User(userId, userName, 'grey');
-    onlineUsers.push(user);
-    res.cookie('chat-user', userId);
+    res.cookie('nick-name', userName);
 
     res.sendFile(reqPath + '/pages/index.html');
 });
 
 io.on('connection', (socket: any) => {
     connections.push(socket);
-    io.emit('users', onlineUsers);
+    // io.emit('users', onlineUsers);
+    // io.emit('messages', previousMessages);
 
-    socket.on('chat message', (msg: {id: string, message: string}) => {
-        const user = onlineUsers.find(i => i.id === msg.id);
-        const date =  new Date();
-        if (user) {
-            const message = new Message(user.nickName, msg.message, date.getHours() + ':' + date.getMinutes());
-            io.emit('chat message', message);
+    socket.on('cookie', (cookie: string) => {
+        onlineUsers.push(new User(cookie, '#000'));
+        io.emit('users', onlineUsers);
+        io.emit('messages', previousMessages);
+    });
+
+    socket.on('chat message', (msg: {author: string, message: string}) => {
+        const index = onlineUsers.findIndex(i => i.nickName === msg.author);
+        const user = onlineUsers[index];
+        if (user) {   
+            const date =  new Date();
+            const tokens = msg.message.split(' ');
+            if (tokens[0] === '/nickcolor') {
+                user.color = '#' + tokens[1];
+                onlineUsers[index] = user;
+            } else {
+                const message = new Message(user.nickName, msg.message, date.getHours() + ':' + date.getMinutes(), user.color);
+                addMessage(message);
+                io.emit('chat message', message);
+            }
         }
     });
     socket.on('users', (users: User[]) => {
         io.emit('users', users);
+    });
+    socket.on('messages', (messages: Message[]) => {
+        io.emit('messages', messages);
     });
     socket.on('disconnect', () => {
         const i = connections.indexOf(socket);
@@ -57,6 +74,14 @@ io.on('connection', (socket: any) => {
     });
 });
 
+
 http.listen(4200, () => {
     console.log('listening on port 4200');
 });
+
+function addMessage(msg: Message) {
+    if (previousMessages.length === 200) {
+        previousMessages.shift();
+    }
+    previousMessages.push(msg);
+}
