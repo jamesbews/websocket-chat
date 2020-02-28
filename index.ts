@@ -34,8 +34,6 @@ app.get('/', (req: express.Request, res: express.Response) => {
 
 io.on('connection', (socket: any) => {
     connections.push(socket);
-    // io.emit('users', onlineUsers);
-    // io.emit('messages', previousMessages);
 
     socket.on('cookie', (cookie: string) => {
         onlineUsers.push(new User(cookie, '#000'));

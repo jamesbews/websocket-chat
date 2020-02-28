@@ -6,15 +6,15 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { height: 90vh; font: 13px Helvetica, Arial; background-color: whitesmoke;}
-            form { background: lightgrey; padding: 10px; position: fixed; bottom: 0; width: 100%; }
+            body { font: 13px Helvetica, Arial; background-color: whitesmoke;}
+            form { background: lightgrey; padding: 10px; margin: 0 10px;}
             form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
             form button { width: 9%; padding: 10px; }
             ul { padding: 10px; width: 100%; max-height: 100%; overflow: auto; }
-            #user-parent { margin: 10px; background-color: darkgray; height: 95%;}
+            #user-parent { margin: 10px; background-color: darkgray; height: 92%;}
             #users { list-style-type: none; }
-            #message-parent { margin: 10px; background-color:darkgray; height: 95%; position: relative;}
-            #messages { list-style-type: none; margin: 0; padding: 0; position: absolute; bottom: 10px;}
+            #message-parent { margin: 10px; background-color:darkgray; height: 92%; position: relative;}
+            #messages { list-style-type: none; margin: 0; padding: 0; position: absolute; bottom: 0;}
             #messages li { padding: 5px 10px; width: 50%;}
         </style>
         <script src="/socket.io/socket.io.js"></script>   
@@ -56,6 +56,7 @@
                         $('#messages').append('<li style="margin: 10px; background-color: #ebebeb; border-radius: 3px; float: left;"><p>' + msg.timestamp + ' <strong style="color:' + msg.messageColor + ';">' + msg.author + '</strong></p><p style="margin: 0;">' + msg.message + '</p></li>')
                             .css({'padding': '10px'});
                     }
+                    updateScroll();
                 });
 
                 socket.on('users', function(users) {
@@ -71,7 +72,7 @@
                 });
                 socket.on('messages', function(messages) {
                     var me = $.cookie('chat-user').toString();
-                    $('#messages').empty()
+                    $('#messages').empty();
                     for(var i = 0; i < messages.length; i++) {
                         if (messages[i].author === me) {
                             $('#messages').append('<li style="margin: 10px; background-color: #ebebeb; border-radius: 3px; float: right;"><p>' + messages[i].timestamp + ' <strong style="color:' + messages[i].messageColor + ';">' + messages[i].author + '</strong></p><p style="margin: 0;">' + messages[i].message + '</p></li>')
@@ -93,15 +94,14 @@
                     }
                 }
                 function updateScroll() {
-                    var elem = $('#messages');
-                    elem.scrollTop = elem.scrollHeight;
+                    $('#messages').scrollTop($('#messages').height());
                 }
             });
             
         </script>
     </head>
     <body>
-        <div class="col" style="padding-top: 10px;">
+        <div class="container-fluid" style="padding-top: 10px;">
             <div class="row" style="height: 90vh;">
                 <div class="col-8">
                     <h5>Chat</h5>
@@ -117,9 +117,11 @@
                 </div>
             </div>
             <div class="row">
-                <form>
-                    <input id="m" autocomplete="off"/><button type="button" class="btn btn-success">Send</button>
-                </form>
+                <div class="col-12">
+                    <form>
+                        <input id="m" autocomplete="off"/><button type="button" class="btn btn-success">Send</button>
+                    </form>
+                </div>
             </div>
         </div>
 
