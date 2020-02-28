@@ -3,12 +3,14 @@
     <head>
         <title>SENG 513 Chat App</title>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
             body { height: 90vh; font: 13px Helvetica, Arial; }
             form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
             form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
             form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+            #users { list-style-type: none; }
             #messages { list-style-type: none; margin: 0; padding: 0; }
             #messages li { padding: 5px 10px; }
         </style>
@@ -30,14 +32,25 @@
                     e.preventDefault();
                     // TODO if / nikcname
                     // TODO if / color
-                    socket.emit('chat message', {author: $.cookie('chat-user'), message: $('#m').val()});
+
+                    var tokens = $('#m').val().split(' ');
+                    var currentMe = $.cookie('chat-user');
+                    if (tokens[0] === '/nick') {
+                        tokens.shift();
+                        var users = [];
+                        $('#users').each(function() {users.push($(this).text())});
+                        if (isNickUnique(users, tokens.join(' '))) {
+                            $.cookie('chat-user', tokens.join(' '));
+                        }
+                    }
+                    socket.emit('chat message', {author: currentMe, message: $('#m').val()});
                     $('#m').val('');
                     return false;
                 });
                 socket.on('chat message', function(msg){
                     var me = $.cookie('chat-user').toString();
                     if (msg.author === me) {
-                        $('#messages').append('<li>' + msg.timestamp + ' <strong style="color:' + msg.messageColor + ';">' + msg.author + '</strong>: ' + msg.message + '</li>').css('font-weight', '700');
+                        $('#messages').append('<li>' + msg.timestamp + ' <strong style="color:' + msg.messageColor + ';">' + msg.author + '</strong>: ' + msg.message + '</li>');
                     } else {
                         $('#messages').append('<li>' + msg.timestamp + ' <strong style="color:' + msg.messageColor + ';">' + msg.author + '</strong>: ' + msg.message + '</li>');
                     }
@@ -51,7 +64,7 @@
                         if (users[i].nickName === me) {
                             name = name + ' (You)';
                         }
-                        $('#users').append($('<li>').text(name));
+                        $('#users').append('<li><i class="material-icons" style="vertical-align: bottom;">person</i> ' + name + '</li>');
                     }
                 });
                 socket.on('messages', function(messages) {
@@ -59,12 +72,21 @@
                     $('#messages').empty()
                     for(var i = 0; i < messages.length; i++) {
                         if (messages[i].author === me) {
-                            $('#messages').append($('<li>').text(messages[i].timestamp + ' ' + messages[i].author + ': ' + messages[i].message).css('font-weight', '700'));
+                            $('#messages').append('<li>' + messages[i].timestamp + ' <strong style="color:' + messages[i].messageColor + ';">' + messages[i].author + '</strong>: ' + messages[i].message + '</li>');
                         } else {
-                            $('#messages').append($('<li>').text(messages[i].timestamp + ' ' + messages[i].author + ': ' + messages[i].message));
+                            $('#messages').append('<li>' + messages[i].timestamp + ' <strong style="color:' + messages[i].messageColor + ';">' + messages[i].author + '</strong>: ' + messages[i].message + '</li>');
                         }
                     }
                 });
+
+                function isNickUnique(users, newName) {
+                    const exists = users.find(i => i === newName);
+                    if (exists) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
             });
             
         </script>

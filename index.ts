@@ -49,9 +49,19 @@ io.on('connection', (socket: any) => {
         if (user) {   
             const date =  new Date();
             const tokens = msg.message.split(' ');
+            console.log()
             if (tokens[0] === '/nickcolor') {
                 user.color = '#' + tokens[1];
                 onlineUsers[index] = user;
+            } else if (tokens[0] === '/nick') {
+                tokens.shift();
+                console.log(tokens.join(' '));
+                if (isNickUnique(tokens.join(' '))) {
+                    console.log('Unique')
+                    user.nickName = tokens.join(' ');
+                    onlineUsers[index] = user;
+                    io.emit('users', onlineUsers);
+                }
             } else {
                 const message = new Message(user.nickName, msg.message, date.getHours() + ':' + date.getMinutes(), user.color);
                 addMessage(message);
@@ -84,4 +94,13 @@ function addMessage(msg: Message) {
         previousMessages.shift();
     }
     previousMessages.push(msg);
+}
+
+function isNickUnique(name: string): boolean {
+    const exists = onlineUsers.find(i => i.nickName === name);
+    if (exists) {
+        return false;
+    } else {
+        return true;
+    }
 }
