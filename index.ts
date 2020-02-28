@@ -49,15 +49,12 @@ io.on('connection', (socket: any) => {
         if (user) {   
             const date =  new Date();
             const tokens = msg.message.split(' ');
-            console.log()
             if (tokens[0] === '/nickcolor') {
                 user.color = '#' + tokens[1];
                 onlineUsers[index] = user;
             } else if (tokens[0] === '/nick') {
                 tokens.shift();
-                console.log(tokens.join(' '));
                 if (isNickUnique(tokens.join(' '))) {
-                    console.log('Unique')
                     user.nickName = tokens.join(' ');
                     onlineUsers[index] = user;
                     io.emit('users', onlineUsers);

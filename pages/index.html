@@ -6,13 +6,16 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
         <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { height: 90vh; font: 13px Helvetica, Arial; }
-            form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+            body { height: 90vh; font: 13px Helvetica, Arial; background-color: whitesmoke;}
+            form { background: lightgrey; padding: 10px; position: fixed; bottom: 0; width: 100%; }
             form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-            form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+            form button { width: 9%; padding: 10px; }
+            ul { padding: 10px; width: 100%; max-height: 100%; overflow: auto; }
+            #user-parent { margin: 10px; background-color: darkgray; height: 95%;}
             #users { list-style-type: none; }
-            #messages { list-style-type: none; margin: 0; padding: 0; }
-            #messages li { padding: 5px 10px; }
+            #message-parent { margin: 10px; background-color:darkgray; height: 95%; position: relative;}
+            #messages { list-style-type: none; margin: 0; padding: 0; position: absolute; bottom: 10px;}
+            #messages li { padding: 5px 10px; width: 50%;}
         </style>
         <script src="/socket.io/socket.io.js"></script>   
         <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>    
@@ -30,9 +33,6 @@
 
                 $('form').submit(function(e) {
                     e.preventDefault();
-                    // TODO if / nikcname
-                    // TODO if / color
-
                     var tokens = $('#m').val().split(' ');
                     var currentMe = $.cookie('chat-user');
                     if (tokens[0] === '/nick') {
@@ -50,9 +50,11 @@
                 socket.on('chat message', function(msg){
                     var me = $.cookie('chat-user').toString();
                     if (msg.author === me) {
-                        $('#messages').append('<li>' + msg.timestamp + ' <strong style="color:' + msg.messageColor + ';">' + msg.author + '</strong>: ' + msg.message + '</li>');
+                        $('#messages').append('<li style="margin: 10px; background-color: #ebebeb; border-radius: 3px; float: right;"><p>' + msg.timestamp + ' <strong style="color:' + msg.messageColor + ';">' + msg.author + '</strong></p><p style="margin: 0;">' + msg.message + '</p></li>')
+                            .css({'padding': '10px'});
                     } else {
-                        $('#messages').append('<li>' + msg.timestamp + ' <strong style="color:' + msg.messageColor + ';">' + msg.author + '</strong>: ' + msg.message + '</li>');
+                        $('#messages').append('<li style="margin: 10px; background-color: #ebebeb; border-radius: 3px; float: left;"><p>' + msg.timestamp + ' <strong style="color:' + msg.messageColor + ';">' + msg.author + '</strong></p><p style="margin: 0;">' + msg.message + '</p></li>')
+                            .css({'padding': '10px'});
                     }
                 });
 
@@ -72,11 +74,14 @@
                     $('#messages').empty()
                     for(var i = 0; i < messages.length; i++) {
                         if (messages[i].author === me) {
-                            $('#messages').append('<li>' + messages[i].timestamp + ' <strong style="color:' + messages[i].messageColor + ';">' + messages[i].author + '</strong>: ' + messages[i].message + '</li>');
+                            $('#messages').append('<li style="margin: 10px; background-color: #ebebeb; border-radius: 3px; float: right;"><p>' + messages[i].timestamp + ' <strong style="color:' + messages[i].messageColor + ';">' + messages[i].author + '</strong></p><p style="margin: 0;">' + messages[i].message + '</p></li>')
+                            .css({'padding': '10px'});
                         } else {
-                            $('#messages').append('<li>' + messages[i].timestamp + ' <strong style="color:' + messages[i].messageColor + ';">' + messages[i].author + '</strong>: ' + messages[i].message + '</li>');
+                            $('#messages').append('<li style="margin: 10px; background-color: #ebebeb; border-radius: 3px; float: left;"><p>' + messages[i].timestamp + ' <strong style="color:' + messages[i].messageColor + ';">' + messages[i].author + '</strong></p><p style="margin: 0;">' + messages[i].message + '</p></li>')
+                            .css({'padding': '10px'});
                         }
                     }
+                    updateScroll();
                 });
 
                 function isNickUnique(users, newName) {
@@ -87,27 +92,33 @@
                         return true;
                     }
                 }
+                function updateScroll() {
+                    var elem = $('#messages');
+                    elem.scrollTop = elem.scrollHeight;
+                }
             });
             
         </script>
     </head>
     <body>
-        <div style="margin: 20px;">
+        <div class="col" style="padding-top: 10px;">
             <div class="row" style="height: 90vh;">
                 <div class="col-8">
                     <h5>Chat</h5>
-                    <div style="margin: 20px; background-color:darkgray; height: 100%;">
+                    <div id="message-parent">
                         <ul id="messages"></ul>
                     </div>
                 </div>
                 <div class="col-4">
                     <h5>Online Users:</h5>
-                    <ul id="users">
+                    <div id="user-parent">
+                        <ul id="users">
+                    </div>
                 </div>
             </div>
             <div class="row">
                 <form>
-                    <input id="m" autocomplete="off"/><button>Send</button>
+                    <input id="m" autocomplete="off"/><button type="button" class="btn btn-success">Send</button>
                 </form>
             </div>
         </div>
