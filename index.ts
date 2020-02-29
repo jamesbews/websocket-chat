@@ -52,13 +52,16 @@ io.on('connection', (socket: any) => {
                 onlineUsers[index] = user;
             } else if (tokens[0] === '/nick') {
                 tokens.shift();
-                if (isNickUnique(tokens.join(' '))) {
-                    user.nickName = tokens.join(' ');
+                const newName = tokens.join(' ');
+                if (isNickUnique(newName)) {
+                    updateMessageNames(user.nickName, newName);
+                    user.nickName = newName;
                     onlineUsers[index] = user;
                     io.emit('users', onlineUsers);
+                    io.emit('messages', previousMessages);
                 }
             } else {
-                const message = new Message(user.nickName, msg.message, date.getHours() + ':' + date.getMinutes(), user.color);
+                const message = new Message(user.nickName, msg.message, date.getHours() + ':' + (date.getMinutes() < 10 ? '0' : '') + date.getMinutes(), user.color);
                 addMessage(message);
                 io.emit('chat message', message);
             }
@@ -89,6 +92,14 @@ function addMessage(msg: Message) {
         previousMessages.shift();
     }
     previousMessages.push(msg);
+}
+
+function updateMessageNames(oldName: string, newName: string) {
+    previousMessages.forEach(message => {
+        if (message.author === oldName) {
+            message.author = newName;
+        }
+    });
 }
 
 function isNickUnique(name: string): boolean {
