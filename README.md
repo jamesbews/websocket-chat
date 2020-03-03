@@ -1,7 +1,7 @@
 # Websocket-Chat
 
-#Build
+# Build
 npm run build
 
-#Deploy
+# Deploy
 node build/index.js
