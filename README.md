@@ -1,5 +1,8 @@
 # Websocket-Chat
 
+# Dependencies
+np install
+
 # Build
 npm run build
 
